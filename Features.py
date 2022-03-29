@@ -23,6 +23,7 @@ class AudioFeature:
             pass
 
         def __turn_taking():
+            #  Guarda preferiti PhD, inherit da classe VAD.get_speech_segments di speechbrain
             pass
 
         def __pyaudio_analysis(signal,
