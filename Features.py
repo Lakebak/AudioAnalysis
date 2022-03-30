@@ -22,7 +22,8 @@ class AudioFeature:
             # TO-DO:
             pass
 
-        def __turn_taking():
+        def __turn_taking(vad: bool=True,
+        ovd: bool=True):
             #  Guarda preferiti PhD, inherit da classe VAD.get_speech_segments di speechbrain
             pass
 
