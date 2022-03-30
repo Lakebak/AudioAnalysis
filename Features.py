@@ -1,74 +1,83 @@
+from email.mime import audio
 import pandas as pd
+
 from pyAudioAnalysis import ShortTermFeatures, MidTermFeatures
 from Audio import Audio
 
 
 class AudioFeature:
 
-    def __init__(self,
-                 low_lvl_wnd: float,
-                 low_lvl_step: float,
-                 mid_lvl_wnd: float,
-                 mid_lvl_step: float):
-        # TO-DO: implementare possibilità di scegliere le feature da un file di configurazione
-        self.mw = mid_lvl_wnd
-        self.ms = mid_lvl_step
-        self.sw = low_lvl_wnd
-        self.ss = low_lvl_step
+    def __init__(self) -> None:
+        self.turn_taking = self.TurnTaking()
+        self.prosody = self.Prosody()
 
-    def __call__(self, audio_signal, sr):
+    class TurnTaking:
 
-        def __librosa():
-            # TO-DO:
+        def __init__(self) -> None:
             pass
 
-        def __turn_taking(vad: bool=True,
-        ovd: bool=True):
-            #  Guarda preferiti PhD, inherit da classe VAD.get_speech_segments di speechbrain
-            pass
+    class Prosody:             # TO-DO: implementare possibilità di scegliere le feature da un file di configurazione
 
-        def __pyaudio_analysis(signal,
-                               sampling_rate: int = 44100,
-                               low_lvl: bool = False,
-                               mid_lvl: bool = True):
+        def __init__(self,
+            low_lvl_wnd: float,
+            low_lvl_step: float,
+            mid_lvl_wnd: float,
+            mid_lvl_step: float):
 
-            window = sampling_rate * self.sw
-            step = sampling_rate * self.ss
-            mid_window = sampling_rate * self.mw
-            mid_step = sampling_rate * self.ms
+            self.mw = mid_lvl_wnd
+            self.ms = mid_lvl_step
+            self.sw = low_lvl_wnd
+            self.ss = low_lvl_step
 
-            def low_level():
-                if low_lvl:
-                    low_feat, low_feat_names = \
-                        ShortTermFeatures.feature_extraction(signal=signal,
-                                                             sampling_rate=sampling_rate,
-                                                             window=window,
-                                                             step=step)
-                    df_low = pd.DataFrame(low_feat.transpose(),
-                                          columns=low_feat_names)
+    
+        def __call__(self, path, sr=44100):
 
-                else:
-                    df_low = pd.DataFrame()
-                return df_low
+            def __load_audio():
+                audio = Audio(path=path, sr=sr)
+                return audio.load()
 
-            def mid_level():
-                if mid_lvl:
-                    mid_feat, _, mid_feat_names = \
-                        MidTermFeatures.mid_feature_extraction(signal=signal,
-                                                               sampling_rate=sampling_rate,
-                                                               mid_window=mid_window,
-                                                               mid_step=mid_step,
-                                                               short_window=window,
-                                                               short_step=step)
+            def __pyaudio_analysis(sampling_rate: int=sr,
+                                low_lvl: bool = False,
+                                mid_lvl: bool = True):
 
-                    df_mid = pd.DataFrame(mid_feat.transpose(),
-                                          columns=mid_feat_names)
+                window = sampling_rate * self.sw
+                step = sampling_rate * self.ss
+                mid_window = sampling_rate * self.mw
+                mid_step = sampling_rate * self.ms
 
-                else:
-                    df_mid = pd.DataFrame()
-                return df_mid
+                signal = __load_audio()
 
-            return low_level(), mid_level()
+                def low_level():
+                    if low_lvl:
+                        low_feat, low_feat_names = \
+                            ShortTermFeatures.feature_extraction(signal=signal,
+                                                                sampling_rate=sampling_rate,
+                                                                window=window,
+                                                                step=step)
+                        df_low = pd.DataFrame(low_feat.transpose(),
+                                            columns=low_feat_names)
 
-            #  __pyaudio_analysis(signal=audio_signal, sampling_rate=sr)
-        return
+                    else:
+                        df_low = pd.DataFrame()
+                    return df_low
+
+                def mid_level():
+                    if mid_lvl:
+                        mid_feat, _, mid_feat_names = \
+                            MidTermFeatures.mid_feature_extraction(signal=signal,
+                                                                sampling_rate=sampling_rate,
+                                                                mid_window=mid_window,
+                                                                mid_step=mid_step,
+                                                                short_window=window,
+                                                                short_step=step)
+
+                        df_mid = pd.DataFrame(mid_feat.transpose(),
+                                            columns=mid_feat_names)
+
+                    else:
+                        df_mid = pd.DataFrame()
+                    return df_mid
+
+                return low_level(), mid_level()
+
+            return __pyaudio_analysis()
