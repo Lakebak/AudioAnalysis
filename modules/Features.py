@@ -117,7 +117,7 @@ class AudioFeature:
                      low_lvl_wnd: float = 0.5,
                      low_lvl_step: float = 0.4,
                      mid_lvl_wnd: float = 5.0,
-                     mid_lvl_step: float = 1.0):
+                     mid_lvl_step: float = 4.0):
 
             self.mw = mid_lvl_wnd
             self.ms = mid_lvl_step
@@ -167,13 +167,15 @@ class AudioFeature:
                                                    mid_step=mid_step,
                                                    short_window=window,
                                                    short_step=step)
+                        
+                        n_samples = mid_feat.shape[1]
 
                         df_mid = pd.DataFrame(mid_feat.transpose(),
                                               columns=mid_feat_names,
-                                              index=[file_name])
+                                              index=[file_name]*n_samples)
 
                     else:
-                        df_mid = pd.DataFrame(index=[file_name])
+                        df_mid = pd.DataFrame(index=[file_name]*n_samples)
                     return df_mid
 
                 # return low_level(), mid_level()
