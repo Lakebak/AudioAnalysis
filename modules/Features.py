@@ -15,11 +15,10 @@ class AudioFeature:
         self.prosody = self.Prosody()
 
     def __call__(self,
-     turn_taking_df,
-     prosody_df):
+                 turn_taking_df,
+                 prosody_df):
 
-     return turn_taking_df.join(prosody_df)
-        
+        return turn_taking_df.join(prosody_df)
 
     class TurnTaking:
 
@@ -132,7 +131,7 @@ class AudioFeature:
                 return audio.load()
 
             def __pyaudio_analysis(sampling_rate: int = sr,
-                                   #low_lvl: bool = False,
+                                   # low_lvl: bool = False,
                                    mid_lvl: bool = True):
 
                 window = sampling_rate * self.sw
@@ -179,4 +178,5 @@ class AudioFeature:
 
                 # return low_level(), mid_level()
                 return mid_level()
+
             return __pyaudio_analysis()
