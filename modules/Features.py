@@ -14,6 +14,13 @@ class AudioFeature:
         self.turn_taking = self.TurnTaking()
         self.prosody = self.Prosody()
 
+    def __call__(self,
+     turn_taking_df,
+     prosody_df):
+
+     return turn_taking_df.join(prosody_df)
+        
+
     class TurnTaking:
 
         def __init__(self,
@@ -97,7 +104,7 @@ class AudioFeature:
 
             return df_vad, df_ovd
 
-        def make_dataset(self, df_vad, df_ovd):
+        def merge_turn_taking(self, df_vad, df_ovd):
             dataset = df_vad.join(df_ovd,
                                   lsuffix='_vad',
                                   rsuffix='_ovd',
