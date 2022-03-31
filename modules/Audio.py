@@ -1,3 +1,4 @@
+import os
 import librosa as lb
 import noisereduce as nr
 from numpy import ndarray
@@ -12,10 +13,10 @@ class Audio:
         self.mono = mono
 
     def load(self):
-        self.signal, sr = audioBasicIO.read_audio_file(self.path)
+        sr, self.signal = audioBasicIO.read_audio_file(self.path)
         if sr != self.sr:
             self.signal = lb.resample(self.signal, sr, self.sr)
-        if self.mono:
+        if self.mono and self.signal.ndim > 1:
             self.signal = lb.to_mono(self.signal)
             
         return self.signal
@@ -29,13 +30,14 @@ class Audio:
 
     def denoise(self,
     signal: ndarray,
+    save: bool=False,
     out_path: str='tmp',
     prop_decrease: float=1.0,
     freq_mask_smooth_hz: int=500,
     time_mask_smooth_ms: int=50,
     n_std_thresh_stationary: float=1.5,
     chunk_size: int=6000,
-    n_ftt: int=1024):
+    n_ftt: int=512):
 
 
         filtered = nr.reduce_noise(y=signal, sr=self.sr,
@@ -47,6 +49,10 @@ class Audio:
         chunk_size=chunk_size,
         n_fft=n_ftt)
 
-        Audio.__save_file(self, out_path=out_path)
+        out_file = os.path.basename(self.path)
+        out_path = os.path.join(out_path, out_file)
+
+        if save:
+            Audio.__save_file(self, out_path=out_path)
 
         return filtered

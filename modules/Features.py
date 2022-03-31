@@ -17,10 +17,10 @@ class AudioFeature:
     class Prosody:  # TO-DO: implementare possibilità di scegliere le feature da un file di configurazione
 
         def __init__(self,
-                     low_lvl_wnd: float,
-                     low_lvl_step: float,
-                     mid_lvl_wnd: float,
-                     mid_lvl_step: float):
+                     low_lvl_wnd: float=0.5,
+                     low_lvl_step: float=0.4,
+                     mid_lvl_wnd: float=5.0,
+                     mid_lvl_step: float=1.0):
 
             self.mw = mid_lvl_wnd
             self.ms = mid_lvl_step
