@@ -1,0 +1,22 @@
+{
+    "multi": {
+        "denoise": {
+            "prop_decrease": 0.85
+        }
+    },
+    "ami": {
+        "denoise": {
+            "prop_decrease": 0.8
+        }
+    },
+    "pan": {
+        "denoise": {
+            "prop_decrease": 0.9
+        }
+    },
+    "ta2": {
+        "denoise": {
+            "prop_decrease": 0.9
+        }
+    }
+}
