@@ -9,6 +9,7 @@ import numpy as np
 from pydub import AudioSegment
 from scipy.io import wavfile
 
+
 def convert_dir_mp3_to_wav(audio_folder, sampling_rate, num_channels,
                            use_tags=False):
     """
@@ -30,14 +31,14 @@ def convert_dir_mp3_to_wav(audio_folder, sampling_rate, num_channels,
 
     for f in files_list:
         audio_file = eyed3.load(f)
-        if use_tags and audio_file.tag != None:
+        if use_tags and audio_file.tag is not None:
             artist = audio_file.tag.artist
             title = audio_file.tag.title
-            if artist != None and title != None:
+            if artist is not None and title is not None:
                 if len(title) > 0 and len(artist) > 0:
                     filename = ntpath.split(f)[0] + os.sep + \
-                                  artist.replace(","," ") + " --- " + \
-                                  title.replace(","," ") + ".wav"
+                               artist.replace(",", " ") + " --- " + \
+                               title.replace(",", " ") + ".wav"
                 else:
                     filename = f.replace(".mp3", ".wav")
             else:
@@ -96,7 +97,7 @@ def read_audio_file(input_file):
         if extension in ['.aif', '.aiff']:
             sampling_rate, signal = read_aif(input_file)
         elif extension in ['.wav']:
-            sampling_rate, signal = wavfile.read(input_file) # from scipy.io
+            sampling_rate, signal = wavfile.read(input_file)  # from scipy.io
         elif extension in [".mp3", ".au", ".ogg"]:
             sampling_rate, signal = read_audio_generic(input_file)
         else:

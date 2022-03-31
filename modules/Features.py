@@ -16,15 +16,15 @@ class AudioFeature:
 
     class TurnTaking:
 
-        def __init__(self, 
-                    vad_onset=0.648,
-                    vad_offset=0.577,
-                    vad_min_dur_on=0.181,
-                    vad_min_dur_off=0.037,
-                    ovd_onset=0.448,
-                    ovd_offset=0.362,
-                    ovd_min_dur_on=0.116,
-                    ovd_min_dur_off=0.187):
+        def __init__(self,
+                     vad_onset=0.648,
+                     vad_offset=0.577,
+                     vad_min_dur_on=0.181,
+                     vad_min_dur_off=0.037,
+                     ovd_onset=0.448,
+                     ovd_offset=0.362,
+                     ovd_min_dur_on=0.116,
+                     ovd_min_dur_off=0.187):
             self.vad_onset = vad_onset
             self.vad_offset = vad_offset
             self.vad_min_dur_on = vad_min_dur_on
@@ -34,13 +34,14 @@ class AudioFeature:
             self.ovd_min_dur_on = ovd_min_dur_on
             self.ovd_min_dur_off = ovd_min_dur_off
 
+        @staticmethod
         def __make_df(path, iterable_track):
             file_name = os.path.splitext(os.path.basename(path))[0]
 
             data = {}
-            
+
             for tracks, person, _ in iterable_track.itertracks(yield_label=True):
-                #data['File'] = file_name
+                # data['File'] = file_name
                 data['Person'] = person
                 data['Start'] = tracks.start
                 data['End'] = tracks.end
@@ -48,22 +49,21 @@ class AudioFeature:
                 data['Middle'] = tracks.middle
 
             df = pd.DataFrame([data], index=[file_name])
-            
 
             if df.empty:
                 data = {'Person': np.nan,
-                'Start': np.nan,
-                'End': np.nan,
-                'Duration': np.nan,
-                'Middle': np.nan
-                }
+                        'Start': np.nan,
+                        'End': np.nan,
+                        'Duration': np.nan,
+                        'Middle': np.nan
+                        }
                 df = pd.DataFrame([data], index=[file_name])
-                
-            #df.set_index('File', inplace=True)
+
+            # df.set_index('File', inplace=True)
             return df
 
         def __call__(self, path):
-                        
+
             def voice_activity(self, path):
                 pipeline = VoiceActivityDetection(segmentation='pyannote/segmentation')
                 hyper_parameters = {
@@ -92,27 +92,26 @@ class AudioFeature:
 
             vad = voice_activity(self, path)
             ovd = overlapped_speech(self, path)
-            df_vad = AudioFeature.TurnTaking.__make_df(path, vad)
-            df_ovd = AudioFeature.TurnTaking.__make_df(path, ovd)
+            df_vad = AudioFeature.TurnTaking.__make_df(vad)
+            df_ovd = AudioFeature.TurnTaking.__make_df(ovd)
 
             return df_vad, df_ovd
 
         def make_dataset(self, df_vad, df_ovd):
             dataset = df_vad.join(df_ovd,
-            lsuffix='_vad',
-            rsuffix='_ovd',
-            sort=True)
+                                  lsuffix='_vad',
+                                  rsuffix='_ovd',
+                                  sort=True)
 
             return dataset
-
 
     class Prosody:  # TO-DO: implementare possibilità di scegliere le feature da un file di configurazione
 
         def __init__(self,
-                     low_lvl_wnd: float=0.5,
-                     low_lvl_step: float=0.4,
-                     mid_lvl_wnd: float=5.0,
-                     mid_lvl_step: float=1.0):
+                     low_lvl_wnd: float = 0.5,
+                     low_lvl_step: float = 0.4,
+                     mid_lvl_wnd: float = 5.0,
+                     mid_lvl_step: float = 1.0):
 
             self.mw = mid_lvl_wnd
             self.ms = mid_lvl_step
@@ -140,9 +139,9 @@ class AudioFeature:
                     if low_lvl:
                         low_feat, low_feat_names = \
                             feature_extraction(signal=signal,
-                                                                 sampling_rate=sampling_rate,
-                                                                 window=window,
-                                                                 step=step)
+                                               sampling_rate=sampling_rate,
+                                               window=window,
+                                               step=step)
                         df_low = pd.DataFrame(low_feat.transpose(),
                                               columns=low_feat_names)
 
@@ -154,11 +153,11 @@ class AudioFeature:
                     if mid_lvl:
                         mid_feat, _, mid_feat_names = \
                             mid_feature_extraction(signal=signal,
-                                                                   sampling_rate=sampling_rate,
-                                                                   mid_window=mid_window,
-                                                                   mid_step=mid_step,
-                                                                   short_window=window,
-                                                                   short_step=step)
+                                                   sampling_rate=sampling_rate,
+                                                   mid_window=mid_window,
+                                                   mid_step=mid_step,
+                                                   short_window=window,
+                                                   short_step=step)
 
                         df_mid = pd.DataFrame(mid_feat.transpose(),
                                               columns=mid_feat_names)
