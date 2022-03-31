@@ -125,7 +125,7 @@ class AudioFeature:
                 return audio.load()
 
             def __pyaudio_analysis(sampling_rate: int = sr,
-                                   low_lvl: bool = False,
+                                   #low_lvl: bool = False,
                                    mid_lvl: bool = True):
 
                 window = sampling_rate * self.sw
@@ -135,7 +135,10 @@ class AudioFeature:
 
                 signal = __load_audio()
 
-                def low_level():
+                file_name = os.path.splitext(os.path.basename(path))[0]
+
+                #  Può essere cancellato
+                '''def low_level():
                     if low_lvl:
                         low_feat, low_feat_names = \
                             feature_extraction(signal=signal,
@@ -147,7 +150,7 @@ class AudioFeature:
 
                     else:
                         df_low = pd.DataFrame()
-                    return df_low
+                    return df_low'''
 
                 def mid_level():
                     if mid_lvl:
@@ -160,12 +163,13 @@ class AudioFeature:
                                                    short_step=step)
 
                         df_mid = pd.DataFrame(mid_feat.transpose(),
-                                              columns=mid_feat_names)
+                                              columns=mid_feat_names,
+                                              index=[file_name])
 
                     else:
-                        df_mid = pd.DataFrame()
+                        df_mid = pd.DataFrame(index=[file_name])
                     return df_mid
 
-                return low_level(), mid_level()
-
+                # return low_level(), mid_level()
+                return mid_level()
             return __pyaudio_analysis()
