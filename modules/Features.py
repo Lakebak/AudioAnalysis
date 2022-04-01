@@ -44,6 +44,8 @@ class AudioFeature:
         self.turn_taking = self.TurnTaking()
         self.prosody = self.Prosody()
 
+    # Questa funzione deve essere implementata - controllare il join
+    # perchè hanno campioni diversi
     def __call__(self,
                  turn_taking_df,
                  prosody_df):
@@ -173,6 +175,7 @@ class AudioFeature:
         
 
             
+
 
     class Prosody:  # TO-DO: implementare possibilità di scegliere le feature da un file di configurazione
 
