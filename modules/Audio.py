@@ -26,6 +26,17 @@ class Audio:
 
         return self.signal
 
+    def stream(self, frame_length, hop_length, block_length=1):
+        stream = lb.stream(self.path,
+        frame_length=frame_length,
+        hop_length=hop_length,
+        mono=self.mono,
+        block_length=block_length,
+        fill_value=0
+        )
+
+        return stream
+
     def __save_file(self, out_path: str, filtered_signal: np.ndarray):
         sf.write(file=out_path,
                  data=filtered_signal,

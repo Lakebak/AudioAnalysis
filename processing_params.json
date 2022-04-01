@@ -1,7 +1,9 @@
 {
     "multi": {
         "denoise": {
-            "prop_decrease": 0.85
+            "prop_decrease": 0.95, 
+            "time_constant_s": 0.75,
+             "freq_mask_smooth_hz": 1000
         }
     },
     "ami": {
