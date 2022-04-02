@@ -5,7 +5,7 @@ from modules import AudioFeature
 from tqdm.auto import tqdm
 
 
-path = '/mnt/f/PhD/_Segments/Segmented15s/.selected_audio/multi'
+path = '/mnt/f/PhD/_Segments/Segmented15s/.selected_audio/ami'
 print("Instantiating...")
 features = AudioFeature()
 turn_taker = features.TurnTaking()
@@ -21,6 +21,6 @@ for file in tqdm(glob.glob(os.path.join(path, '*.*'))):
     dataset = pd.concat([dataset, feats], axis=0)
 print("Done.\n")
 
-dataset.to_parquet("/mnt/f/PhD/_Features/multi/speech_5s.parquet", engine='fastparquet')
+dataset.to_parquet("/mnt/f/PhD/_Features/ami/speech_5s.parquet", engine='fastparquet')
 print("File saved")
 
