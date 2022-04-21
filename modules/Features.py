@@ -177,42 +177,6 @@ class AudioFeature:
 
             return df
 
-        '''def __voice_activity(self, audio_in_memory):
-            pipeline = VoiceActivityDetection(segmentation='pyannote/segmentation')
-            hyper_parameters = {
-                "onset": self.vad_onset,
-                "offset": self.vad_offset,
-                "min_duration_on": self.vad_min_dur_on,
-                "min_duration_off": self.vad_min_dur_off
-            }
-
-            pipeline.instantiate(hyper_parameters)
-
-            return pipeline(audio_in_memory)
-
-        def __overlapped_speech(self, audio_in_memory):
-            pipeline = OverlappedSpeechDetection(segmentation='pyannote/segmentation')
-            hyper_parameters = {
-                "onset": self.ovd_onset,
-                "offset": self.ovd_offset,
-                "min_duration_on": self.ovd_min_dur_on,
-                "min_duration_off": self.ovd_min_dur_off
-            }
-
-            pipeline.instantiate(hyper_parameters)
-
-            return pipeline(audio_in_memory)
-
-        @staticmethod
-        def __postprocess_turn_taking(df_vad, df_ovd, frame_length, sr):
-            df_vad['Silence'] = (frame_length / sr) - df_vad['Duration']
-            df_vad['Speech ratio'] = df_vad['Duration'] / df_vad['Silence']
-
-            dataset = df_vad.join(df_ovd,
-                                  lsuffix='_vad',
-                                  rsuffix='_ovd')
-            return dataset'''
-
         def __call__(self,
                      path: str,
                      sr: int = 44100,
@@ -295,9 +259,7 @@ class AudioFeature:
         def __init__(self):
             self.smile = opensmile.Smile(
                 feature_set=opensmile.FeatureSet.ComParE_2016,
-                feature_level=opensmile.FeatureLevel.Functionals,
-                num_workers=4,
-                multiprocessing=True
+                feature_level=opensmile.FeatureLevel.Functionals
             )
 
         def __call__(self,
