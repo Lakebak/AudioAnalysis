@@ -258,7 +258,6 @@ class AudioFeature:
 
                 return pipeline(audio_in_memory)
 
-            @staticmethod
             def postprocess_turn_taking(df_vad, df_ovd):
                 df_vad['Silence'] = (frame_length / sr) - df_vad['Duration']
                 df_vad['Speech ratio'] = df_vad['Duration'] / df_vad['Silence']
