@@ -91,6 +91,7 @@ MID_LEVEL_NAMES = [
 class AudioFeature:
 
     def __init__(self) -> None:
+
         self.turn_taking = self.TurnTaking()
         self.prosody = self.Prosody()
 
@@ -138,11 +139,21 @@ class AudioFeature:
             self.ovd_min_dur_off = ovd_min_dur_off
 
         @staticmethod
-        def __make_df(path, iterable_track):
+        def __make_df(path: str,
+                      iterable_track: iter) -> pd.DataFrame:
+            """
+            Loop through the iterable return from pyAnnote functions and
+            build a dataframe.\n
+            Dataframe is filled with Nan if iterable is empty
+            :param path: Absolute path of the audio file processed
+            :param iterable_track: Iterable return by pyAnnote functions
+            :return: Pandas Dataframe 
+            """
             file_name = os.path.splitext(os.path.basename(path))[0]
 
             data = {}
 
+            # Loop the iterable and store data in a dictionary
             for tracks, person, _ in iterable_track.itertracks(yield_label=True):
                 data['File'] = file_name
                 data['Person'] = person
@@ -151,9 +162,9 @@ class AudioFeature:
                 data['Duration'] = tracks.duration
                 data['Middle'] = tracks.middle
 
-            df = pd.DataFrame([data])
+            df = pd.DataFrame([data])  # Make DataFrame from dict
 
-            if df.empty:
+            if df.empty:  # If iterable is empty fill dict with Nan
                 data = {'Person': np.nan,
                         'Start': np.nan,
                         'End': np.nan,
@@ -162,15 +173,28 @@ class AudioFeature:
                         }
                 df = pd.DataFrame([data])
 
-            df['File'] = file_name
-            # df.set_index('File', inplace=True)
+            df['File'] = file_name 
+
             return df
 
-        def __call__(self, path, sr=44100, frame_length=220500, hop_length=176400):
-
-            '''def load_audio():
-                audio = Audio(path, sr=sr)
-                return audio.stream(frame_length=frame_length, hop_length=hop_length)'''
+        def __call__(self, 
+                     path: str,
+                     sr: int = 44100, 
+                     frame_length: int = 220500,
+                     hop_length: int = 176400) -> pd.DataFrame:
+            """
+            When calling the class it starts the processing of the audio 
+            and compute the amount of Voice Activity and Overlapped Speech.\n
+            Default values are for processing audio at 44,1kHz on 
+            frames of 5s with 1s of overlap\n
+            :param path: Absolute path of the audio file processed
+            :param sr: Sampling frequency at which load and process the file 
+            :param frame_length: Length of the frame in frames 
+            :param hop_length: Starting position of the next frame,
+            from the previous start  
+            :return: Pandas DataFrame with files names as index and start,
+            end, middle point and duration of Voice Activity and Overlapped Speech
+            """
 
             def voice_activity(self, audio_in_memory):
                 pipeline = VoiceActivityDetection(segmentation='pyannote/segmentation')
@@ -210,7 +234,6 @@ class AudioFeature:
             df_vad = pd.DataFrame()
             df_ovd = pd.DataFrame()
 
-            # stream = load_audio()
             audio, sr = lb.load(path,
                                 sr)
             for i in range(0, len(audio), hop_length):
