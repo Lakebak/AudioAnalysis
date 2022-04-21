@@ -1,7 +1,7 @@
 import os
 import glob
 import pandas as pd
-import argparse
+# import argparse
 from tqdm.auto import tqdm
 from modules import AudioFeature
 
@@ -28,7 +28,7 @@ def extract(path, sr, frame_length, hop_factor):
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(
+    '''parser = argparse.ArgumentParser(
         description='extract prosody and turn taking features')
     parser.add_argument('-i', dest='path')
     parser.add_argument('-sr', dest='sr')
@@ -36,11 +36,11 @@ if __name__ == '__main__':
     parser.add_argument('-hop', dest='hop_factor')
     parser.add_argument('-o', dest='out_path')
 
-    args = parser.parse_args()
+    args = parser.parse_args()'''
 
-    features = extract(path=args.path,
-                       sr=args.sr,
-                       frame_length=args.frame_length,
-                       hop_factor=args.hop_factor)
-    features.to_parquet(args.out_path, engine='fastparquet')
+    features = extract(path='/mnt/e/PhD/Data/audio/segmented',
+                       sr=48000,
+                       frame_length=240000,
+                       hop_factor=192000)
+    features.to_parquet('/mnt/e/PhD/Data/features/features_5s_48kHz.parquet', engine='fastparquet')
 
