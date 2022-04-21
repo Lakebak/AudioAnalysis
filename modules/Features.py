@@ -1,9 +1,11 @@
 import os
 import numpy as np
+import opensmile
 import pandas as pd
+import librosa as lb
+import opensmile as smile
 from torch import Tensor, reshape
 from modules import Audio
-from modules.pyAudioAnalysis.MidTermFeatures import mid_feature_extraction
 from pyannote.audio.pipelines import VoiceActivityDetection, OverlappedSpeechDetection
 
 MID_LEVEL_NAMES = [
@@ -40,7 +42,8 @@ MID_LEVEL_NAMES = [
 
 class AudioFeature:
 
-    def __init__(self) -> None:
+    def __init__(self, sr) -> None:
+        self.sr = sr
         self.turn_taking = self.TurnTaking()
         self.prosody = self.Prosody()
 
@@ -53,8 +56,8 @@ class AudioFeature:
         turn_taking_df.drop(
             columns=['Person_ovd', 'Person_vad', 'File_ovd'],
             inplace=True)
-        turn_taking_df.rename(columns={'File_vad': 'File'}, 
-        inplace=True)
+        turn_taking_df.rename(columns={'File_vad': 'File'},
+                              inplace=True)
         prosody = prosody_df.loc[:, MID_LEVEL_NAMES]
 
         dataset = turn_taking_df.join(prosody)
@@ -88,7 +91,7 @@ class AudioFeature:
             data = {}
 
             for tracks, person, _ in iterable_track.itertracks(yield_label=True):
-                #data['File'] = file_name
+                # data['File'] = file_name
                 data['Person'] = person
                 data['Start'] = tracks.start
                 data['End'] = tracks.end
@@ -143,13 +146,12 @@ class AudioFeature:
                 return pipeline(audio_in_memory)
 
             def postprocess_turn_taking(self, df_vad, df_ovd):
-
                 df_vad['Silence'] = (frame_length / sr) - df_vad['Duration']
                 df_vad['Speech ratio'] = df_vad['Duration'] / df_vad['Silence']
-                
+
                 dataset = df_vad.join(df_ovd,
-                                    lsuffix='_vad',
-                                    rsuffix='_ovd')
+                                      lsuffix='_vad',
+                                      rsuffix='_ovd')
                 return dataset
 
             df_vad = pd.DataFrame()
@@ -165,90 +167,38 @@ class AudioFeature:
                 df_vad = pd.concat([df_vad, AudioFeature.TurnTaking.__make_df(path, vad)])
                 df_ovd = pd.concat([df_ovd, AudioFeature.TurnTaking.__make_df(path, ovd)])
 
-            
             stop = df_vad.shape[0]
             df_vad.set_index(pd.RangeIndex(start=0, stop=stop), inplace=True)
             df_ovd.set_index(pd.RangeIndex(start=0, stop=stop), inplace=True)
 
             return postprocess_turn_taking(self, df_vad=df_vad, df_ovd=df_ovd)
 
-        
-
-            
-
-
-
     class Prosody:  # TO-DO: implementare possibilità di scegliere le feature da un file di configurazione
+        def __init__(self):
+            self.smile = opensmile.Smile(
+                feature_set=opensmile.FeatureSet.ComParE_2016,
+                feature_level=opensmile.FeatureLevel.Functionals,
+                num_workers=4,
+                multiprocessing=True
+            )
 
-        def __init__(self,
-                     low_lvl_wnd: float = 0.05,
-                     low_lvl_step: float = 0.01,
-                     mid_lvl_wnd: float = 5.0,
-                     mid_lvl_step: float = 4.0):
-
-            self.mw = mid_lvl_wnd
-            self.ms = mid_lvl_step
-            self.sw = low_lvl_wnd
-            self.ss = low_lvl_step
-
-        def __call__(self, path, sr=44100):
-
-            def __load_audio():
-                audio = Audio(path=path, sr=sr)
-                return audio.load()
-
-            def __pyaudio_analysis(sampling_rate: int = sr,
-                                   # low_lvl: bool = False,
-                                   mid_lvl: bool = True):
-
-                window = sampling_rate * self.sw
-                step = sampling_rate * self.ss
-                mid_window = sampling_rate * self.mw
-                mid_step = sampling_rate * self.ms
-
-                signal = __load_audio()
-
-                file_name = os.path.splitext(os.path.basename(path))[0]
-
-                #  Può essere cancellato
-                '''def low_level():
-                    if low_lvl:
-                        low_feat, low_feat_names = \
-                            feature_extraction(signal=signal,
-                                               sampling_rate=sampling_rate,
-                                               window=window,
-                                               step=step)
-                        df_low = pd.DataFrame(low_feat.transpose(),
-                                              columns=low_feat_names)
-
-                    else:
-                        df_low = pd.DataFrame()
-                    return df_low'''
-
-                def mid_level():
-                    if mid_lvl:
-                        mid_feat, _, mid_feat_names = \
-                            mid_feature_extraction(signal=signal,
-                                                   sampling_rate=sampling_rate,
-                                                   mid_window=mid_window,
-                                                   mid_step=mid_step,
-                                                   short_window=window,
-                                                   short_step=step)
-                        
-                        n_samples = mid_feat.shape[1]
+        def __call__(self,
+                     path,
+                     sr, frame_length,
+                     hop_factor):
+            audio, sr = lb.load(path,
+                                sr=sr)
+            audio_feat = pd.DataFrame()
+            for i in range(0, len(audio), hop_factor):
+                signal = audio[i:i+frame_length]
+                if len(signal) < len(frame_length):
+                    signal = np.pad(signal, (0, frame_length - len(signal)))
+                df = self.smile.process_signal(
+                    signal=signal,
+                    sampling_rate=sr
+                )
+                audio_feat = pd.concat([audio_feat, df])
+            return audio_feat
 
 
-                        df_mid = pd.DataFrame(mid_feat.transpose(),
-                                              columns=mid_feat_names,
-                                              index=pd.RangeIndex(start=0, stop=n_samples))
-                        df_mid['File'] = [file_name]*n_samples
 
-                    else:
-                        df_mid = pd.DataFrame(index=pd.RangeIndex(start=0, stop=n_samples))
-                        df_mid['File'] = file_name
-                    return df_mid
-
-                # return low_level(), mid_level()
-                return mid_level()
-
-            return __pyaudio_analysis()
