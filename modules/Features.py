@@ -177,7 +177,7 @@ class AudioFeature:
 
             return df
 
-        def __voice_activity(self, audio_in_memory):
+        '''def __voice_activity(self, audio_in_memory):
             pipeline = VoiceActivityDetection(segmentation='pyannote/segmentation')
             hyper_parameters = {
                 "onset": self.vad_onset,
@@ -211,7 +211,7 @@ class AudioFeature:
             dataset = df_vad.join(df_ovd,
                                   lsuffix='_vad',
                                   rsuffix='_ovd')
-            return dataset
+            return dataset'''
 
         def __call__(self,
                      path: str,
@@ -232,6 +232,42 @@ class AudioFeature:
             end, middle point and duration of Voice Activity and Overlapped Speech
             """
 
+            def voice_activity(self, audio_in_memory):
+                pipeline = VoiceActivityDetection(segmentation='pyannote/segmentation')
+                hyper_parameters = {
+                    "onset": self.vad_onset,
+                    "offset": self.vad_offset,
+                    "min_duration_on": self.vad_min_dur_on,
+                    "min_duration_off": self.vad_min_dur_off
+                }
+
+                pipeline.instantiate(hyper_parameters)
+
+                return pipeline(audio_in_memory)
+
+            def overlapped_speech(self, audio_in_memory):
+                pipeline = OverlappedSpeechDetection(segmentation='pyannote/segmentation')
+                hyper_parameters = {
+                    "onset": self.ovd_onset,
+                    "offset": self.ovd_offset,
+                    "min_duration_on": self.ovd_min_dur_on,
+                    "min_duration_off": self.ovd_min_dur_off
+                }
+
+                pipeline.instantiate(hyper_parameters)
+
+                return pipeline(audio_in_memory)
+
+            @staticmethod
+            def postprocess_turn_taking(df_vad, df_ovd):
+                df_vad['Silence'] = (frame_length / sr) - df_vad['Duration']
+                df_vad['Speech ratio'] = df_vad['Duration'] / df_vad['Silence']
+
+                dataset = df_vad.join(df_ovd,
+                                      lsuffix='_vad',
+                                      rsuffix='_ovd')
+                return dataset
+
             df_vad = pd.DataFrame()
             df_ovd = pd.DataFrame()
 
@@ -240,8 +276,8 @@ class AudioFeature:
             for i in range(0, len(audio), hop_length):
                 waveform = reshape(Tensor(audio[i:i + frame_length]), (1, -1))
                 audio_in_memory = {"waveform": waveform, "sample_rate": sr}
-                vad = AudioFeature.TurnTaking.__voice_activity(self, audio_in_memory=audio_in_memory)
-                ovd = AudioFeature.TurnTaking.__overlapped_speech(self, audio_in_memory=audio_in_memory)
+                vad = voice_activity(self, audio_in_memory=audio_in_memory)
+                ovd = overlapped_speech(self, audio_in_memory=audio_in_memory)
 
                 df_vad = pd.concat([df_vad, AudioFeature.TurnTaking.__make_df(path, vad)])
                 df_ovd = pd.concat([df_ovd, AudioFeature.TurnTaking.__make_df(path, ovd)])
@@ -250,11 +286,9 @@ class AudioFeature:
             df_vad.set_index(pd.RangeIndex(start=0, stop=stop), inplace=True)
             df_ovd.set_index(pd.RangeIndex(start=0, stop=stop), inplace=True)
 
-            out_df = AudioFeature.TurnTaking.__postprocess_turn_taking(
+            out_df = postprocess_turn_taking(
                 df_vad=df_vad,
-                df_ovd=df_ovd,
-                frame_length=frame_length,
-                sr=sr)
+                df_ovd=df_ovd)
 
             return out_df
 

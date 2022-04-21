@@ -39,8 +39,8 @@ if __name__ == '__main__':
     args = parser.parse_args()'''
 
     features = extract(path='/mnt/e/PhD/Data/audio/segmented',
-                       sr=48000,
-                       frame_length=240000,
-                       hop_factor=192000)
-    features.to_parquet('/mnt/e/PhD/Data/features/features_5s_48kHz.parquet', engine='fastparquet')
+                       sr=44100,
+                       frame_length=220500,
+                       hop_factor=176400)
+    features.to_parquet('/mnt/e/PhD/Data/features/features_5s_44kHz.parquet', engine='fastparquet')
 
