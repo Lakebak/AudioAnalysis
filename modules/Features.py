@@ -3,29 +3,42 @@ import numpy as np
 import opensmile
 import pandas as pd
 import librosa as lb
-import opensmile as smile
 from torch import Tensor, reshape
-from modules import Audio
 from pyannote.audio.pipelines import VoiceActivityDetection, OverlappedSpeechDetection
 
 MID_LEVEL_NAMES = [
-    'pcm_RMSenergy_sma_stddev', 'pcm_RMSenergy_sma_skewness', 'pcm_RMSenergy_sma_kurtosis', 'pcm_RMSenergy_sma_meanSegLen'
+    'pcm_RMSenergy_sma_stddev', 'pcm_RMSenergy_sma_skewness', 'pcm_RMSenergy_sma_kurtosis',
+    'pcm_RMSenergy_sma_meanSegLen',
     'pcm_zcr_sma_stddev', 'pcm_zcr_sma_skewness', 'pcm_zcr_sma_kurtosis', 'pcm_zcr_sma_meanSegLen',
-    'pcm_RMSenergy_sma_de_stddev', 'pcm_RMSenergy_sma_de_skewness', 'pcm_RMSenergy_sma_de_kurtosis', 'pcm_RMSenergy_sma_de_meanSegLen',
+    'pcm_RMSenergy_sma_de_stddev', 'pcm_RMSenergy_sma_de_skewness', 'pcm_RMSenergy_sma_de_kurtosis',
+    'pcm_RMSenergy_sma_de_meanSegLen',
     'pcm_zcr_sma_de_stddev', 'pcm_zcr_sma_de_skewness', 'pcm_zcr_sma_de_kurtosis', 'pcm_zcr_sma_de_meanSegLen',
-    'pcm_fftMag_spectralRollOff25.0_sma_stddev', 'pcm_fftMag_spectralRollOff25.0_sma_skewness', 'pcm_fftMag_spectralRollOff25.0_sma_kurtosis', 'pcm_fftMag_spectralRollOff25.0_sma_meanSegLen',
-    'pcm_fftMag_spectralRollOff50.0_sma_stddev', 'pcm_fftMag_spectralRollOff50.0_sma_skewness', 'pcm_fftMag_spectralRollOff50.0_sma_kurtosis', 'pcm_fftMag_spectralRollOff50.0_sma_meanSegLen',
-    'pcm_fftMag_spectralRollOff75.0_sma_stddev', 'pcm_fftMag_spectralRollOff75.0_sma_skewness', 'pcm_fftMag_spectralRollOff75.0_sma_kurtosis', 'pcm_fftMag_spectralRollOff75.0_sma_meanSegLen',
-    'pcm_fftMag_spectralRollOff90.0_sma_stddev', 'pcm_fftMag_spectralRollOff90.0_sma_skewness', 'pcm_fftMag_spectralRollOff90.0_sma_kurtosis', 'pcm_fftMag_spectralRollOff90.0_sma_meanSegLen',
-    'pcm_fftMag_spectralFlux_sma_stddev', 'pcm_fftMag_spectralFlux_sma_skewness', 'pcm_fftMag_spectralFlux_sma_kurtosis', 'pcm_fftMag_spectralFlux_sma_meanSegLen',
-    'pcm_fftMag_spectralCentroid_sma_stddev', 'pcm_fftMag_spectralCentroid_sma_skewness', 'pcm_fftMag_spectralCentroid_sma_kurtosis', 'pcm_fftMag_spectralCentroid_sma_meanSegLen',
-    'pcm_fftMag_spectralEntropy_sma_stddev',  'pcm_fftMag_spectralEntropy_sma_skewness',  'pcm_fftMag_spectralEntropy_sma_kurtosis',  'pcm_fftMag_spectralEntropy_sma_meanSegLen',
-    'pcm_fftMag_spectralVariance_sma_stddev', 'pcm_fftMag_spectralVariance_sma_skewness', 'pcm_fftMag_spectralVariance_sma_kurtosis', 'pcm_fftMag_spectralVariance_sma_meanSegLen',
-    'pcm_fftMag_spectralSkewness_sma_stddev', 'pcm_fftMag_spectralSkewness_sma_skewness', 'pcm_fftMag_spectralSkewness_sma_kurtosis', 'pcm_fftMag_spectralSkewness_sma_meanSegLen',
-    'pcm_fftMag_spectralKurtosis_sma_stddev', 'pcm_fftMag_spectralKurtosis_sma_skewness', 'pcm_fftMag_spectralKurtosis_sma_kurtosis', 'pcm_fftMag_spectralKurtosis_sma_meanSegLen',
-    'pcm_fftMag_spectralSlope_sma_stddev', 'pcm_fftMag_spectralSlope_sma_skewness', 'pcm_fftMag_spectralSlope_sma_kurtosis', 'pcm_fftMag_spectralSlope_sma_meanSegLen',
-    'pcm_fftMag_psySharpness_sma_stddev',  'pcm_fftMag_psySharpness_sma_skewness',  'pcm_fftMag_psySharpness_sma_kurtosis', 'pcm_fftMag_psySharpness_sma_meanSegLen',
-    'pcm_fftMag_spectralHarmonicity_sma_stddev', 'pcm_fftMag_spectralHarmonicity_sma_skewness', 'pcm_fftMag_spectralHarmonicity_sma_kurtosis', 'pcm_fftMag_spectralHarmonicity_sma_meanSegLen',
+    'pcm_fftMag_spectralRollOff25.0_sma_stddev', 'pcm_fftMag_spectralRollOff25.0_sma_skewness',
+    'pcm_fftMag_spectralRollOff25.0_sma_kurtosis', 'pcm_fftMag_spectralRollOff25.0_sma_meanSegLen',
+    'pcm_fftMag_spectralRollOff50.0_sma_stddev', 'pcm_fftMag_spectralRollOff50.0_sma_skewness',
+    'pcm_fftMag_spectralRollOff50.0_sma_kurtosis', 'pcm_fftMag_spectralRollOff50.0_sma_meanSegLen',
+    'pcm_fftMag_spectralRollOff75.0_sma_stddev', 'pcm_fftMag_spectralRollOff75.0_sma_skewness',
+    'pcm_fftMag_spectralRollOff75.0_sma_kurtosis', 'pcm_fftMag_spectralRollOff75.0_sma_meanSegLen',
+    'pcm_fftMag_spectralRollOff90.0_sma_stddev', 'pcm_fftMag_spectralRollOff90.0_sma_skewness',
+    'pcm_fftMag_spectralRollOff90.0_sma_kurtosis', 'pcm_fftMag_spectralRollOff90.0_sma_meanSegLen',
+    'pcm_fftMag_spectralFlux_sma_stddev', 'pcm_fftMag_spectralFlux_sma_skewness',
+    'pcm_fftMag_spectralFlux_sma_kurtosis', 'pcm_fftMag_spectralFlux_sma_meanSegLen',
+    'pcm_fftMag_spectralCentroid_sma_stddev', 'pcm_fftMag_spectralCentroid_sma_skewness',
+    'pcm_fftMag_spectralCentroid_sma_kurtosis', 'pcm_fftMag_spectralCentroid_sma_meanSegLen',
+    'pcm_fftMag_spectralEntropy_sma_stddev', 'pcm_fftMag_spectralEntropy_sma_skewness',
+    'pcm_fftMag_spectralEntropy_sma_kurtosis', 'pcm_fftMag_spectralEntropy_sma_meanSegLen',
+    'pcm_fftMag_spectralVariance_sma_stddev', 'pcm_fftMag_spectralVariance_sma_skewness',
+    'pcm_fftMag_spectralVariance_sma_kurtosis', 'pcm_fftMag_spectralVariance_sma_meanSegLen',
+    'pcm_fftMag_spectralSkewness_sma_stddev', 'pcm_fftMag_spectralSkewness_sma_skewness',
+    'pcm_fftMag_spectralSkewness_sma_kurtosis', 'pcm_fftMag_spectralSkewness_sma_meanSegLen',
+    'pcm_fftMag_spectralKurtosis_sma_stddev', 'pcm_fftMag_spectralKurtosis_sma_skewness',
+    'pcm_fftMag_spectralKurtosis_sma_kurtosis', 'pcm_fftMag_spectralKurtosis_sma_meanSegLen',
+    'pcm_fftMag_spectralSlope_sma_stddev', 'pcm_fftMag_spectralSlope_sma_skewness',
+    'pcm_fftMag_spectralSlope_sma_kurtosis', 'pcm_fftMag_spectralSlope_sma_meanSegLen',
+    'pcm_fftMag_psySharpness_sma_stddev', 'pcm_fftMag_psySharpness_sma_skewness',
+    'pcm_fftMag_psySharpness_sma_kurtosis', 'pcm_fftMag_psySharpness_sma_meanSegLen',
+    'pcm_fftMag_spectralHarmonicity_sma_stddev', 'pcm_fftMag_spectralHarmonicity_sma_skewness',
+    'pcm_fftMag_spectralHarmonicity_sma_kurtosis', 'pcm_fftMag_spectralHarmonicity_sma_meanSegLen',
     'mfcc_sma[1]_stddev', 'mfcc_sma[1]_skewness', 'mfcc_sma[1]_kurtosis', 'mfcc_sma[1]_meanSegLen',
     'mfcc_sma[2]_stddev', 'mfcc_sma[2]_skewness', 'mfcc_sma[2]_kurtosis', 'mfcc_sma[2]_meanSegLen',
     'mfcc_sma[3]_stddev', 'mfcc_sma[3]_skewness', 'mfcc_sma[3]_kurtosis', 'mfcc_sma[3]_meanSegLen',
@@ -81,22 +94,28 @@ class AudioFeature:
         self.turn_taking = self.TurnTaking()
         self.prosody = self.Prosody()
 
-    # Questa funzione deve essere implementata - controllare il join
-    # perchè hanno campioni diversi
     def __call__(self,
                  turn_taking_df,
                  prosody_df):
 
-        turn_taking_df.drop(
-            columns=['Person_ovd', 'Person_vad', 'File_ovd'],
-            inplace=True)
-        turn_taking_df.rename(columns={'File_vad': 'File'},
-                              inplace=True)
+        turn_taking = turn_taking_df.drop(
+            columns=['Person_vad', 'Person_ovd', 'File_ovd', 'Start_vad',
+                     'Start_ovd', 'End_vad', 'End_ovd', 'Middle_vad',
+                     'Middle_ovd']
+        )
+        turn_taking.rename(columns={'File_vad': 'File'},
+                           inplace=True)
         prosody = prosody_df.loc[:, MID_LEVEL_NAMES]
+        # prosody['File'] = prosody_df.loc[:, 'File']
+        prosody.set_index(pd.RangeIndex(start=0, stop=prosody.shape[0]),
+                          inplace=True)
+        turn_taking.set_index(pd.RangeIndex(start=0, stop=turn_taking.shape[0]),
+                              inplace=True)
 
-        dataset = turn_taking_df.join(prosody)
+        dataset = turn_taking.join(prosody)
+        return dataset.set_index('File')
 
-        return dataset.reindex(sorted(dataset.columns), axis=1)
+        # return dataset.reindex(sorted(dataset.columns), axis=1)
 
     class TurnTaking:
 
@@ -125,7 +144,7 @@ class AudioFeature:
             data = {}
 
             for tracks, person, _ in iterable_track.itertracks(yield_label=True):
-                # data['File'] = file_name
+                data['File'] = file_name
                 data['Person'] = person
                 data['Start'] = tracks.start
                 data['End'] = tracks.end
@@ -149,9 +168,9 @@ class AudioFeature:
 
         def __call__(self, path, sr=44100, frame_length=220500, hop_length=176400):
 
-            def load_audio():
+            '''def load_audio():
                 audio = Audio(path, sr=sr)
-                return audio.stream(frame_length=frame_length, hop_length=hop_length)
+                return audio.stream(frame_length=frame_length, hop_length=hop_length)'''
 
             def voice_activity(self, audio_in_memory):
                 pipeline = VoiceActivityDetection(segmentation='pyannote/segmentation')
@@ -191,9 +210,11 @@ class AudioFeature:
             df_vad = pd.DataFrame()
             df_ovd = pd.DataFrame()
 
-            stream = load_audio()
-            for block in stream:
-                waveform = reshape(Tensor(block), (1, -1))
+            # stream = load_audio()
+            audio, sr = lb.load(path,
+                                sr)
+            for i in range(0, len(audio), hop_length):
+                waveform = reshape(Tensor(audio[i:i + frame_length]), (1, -1))
                 audio_in_memory = {"waveform": waveform, "sample_rate": sr}
                 vad = voice_activity(self, audio_in_memory=audio_in_memory)
                 ovd = overlapped_speech(self, audio_in_memory=audio_in_memory)
@@ -218,18 +239,21 @@ class AudioFeature:
 
         def __call__(self,
                      path,
-                     sr, frame_length,
+                     sr,
+                     frame_length,
                      hop_factor):
+            file_name = os.path.splitext(os.path.basename(path))[0]
             audio, sr = lb.load(path,
                                 sr=sr)
             audio_feat = pd.DataFrame()
             for i in range(0, len(audio), hop_factor):
                 signal = audio[i:i + frame_length]
-                if len(signal) < len(frame_length):
+                if len(signal) < frame_length:
                     signal = np.pad(signal, (0, frame_length - len(signal)))
                 df = self.smile.process_signal(
                     signal=signal,
                     sampling_rate=sr
                 )
+                df['File'] = file_name
                 audio_feat = pd.concat([audio_feat, df])
             return audio_feat

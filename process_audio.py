@@ -1,26 +1,46 @@
 import os
 import glob
 import pandas as pd
-from modules import AudioFeature
+import argparse
 from tqdm.auto import tqdm
+from modules import AudioFeature
 
 
-path = '/mnt/f/PhD/_Segments/Segmented15s/.selected_audio/ami'
-print("Instantiating...")
-features = AudioFeature()
-turn_taker = features.TurnTaking()
-prosodier = features.Prosody()
+def extract(path, sr, frame_length, hop_factor):
+    feat_df = pd.DataFrame()
+    extractor = AudioFeature()
+    prosody = extractor.Prosody()
+    turn_taking = extractor.TurnTaking()
 
-dataset = pd.DataFrame()
+    for file in tqdm(glob.glob(os.path.join(path, '**', '*.wav'), recursive=True)):
+        prosody_df = prosody(path=file,
+                             sr=sr,
+                             frame_length=frame_length,
+                             hop_factor=hop_factor)
+        turn_taking_df = turn_taking(path=file,
+                                     sr=sr,
+                                     frame_length=frame_length,
+                                     hop_length=hop_factor)
+        feature = extractor(turn_taking_df, prosody_df)
+        feat_df = pd.concat([feat_df, feature])
 
-print("Done.\nProcessing...")
-for file in tqdm(glob.glob(os.path.join(path, '*.*'))):
-    turn_feat = turn_taker(file)
-    prosody_feat = prosodier(file)
-    feats = features(turn_feat, prosody_feat)
-    dataset = pd.concat([dataset, feats], axis=0)
-print("Done.\n")
+    return feat_df
 
-dataset.to_parquet("/mnt/f/PhD/_Features/ami/speech_5s.parquet", engine='fastparquet')
-print("File saved")
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(
+        description='extract prosody and turn taking features')
+    parser.add_argument('-i', dest='path')
+    parser.add_argument('-sr', dest='sr')
+    parser.add_argument('-frame', dest='frame_length')
+    parser.add_argument('-hop', dest='hop_factor')
+    parser.add_argument('-o', dest='out_path')
+
+    args = parser.parse_args()
+
+    features = extract(path=args.path,
+                       sr=args.sr,
+                       frame_length=args.frame_length,
+                       hop_factor=args.hop_factor)
+    features.to_parquet(args.out_path, engine='fastparquet')
 

@@ -1,6 +1,4 @@
-import os
 import librosa as lb
-import noisereduce as nr
 import numpy as np
 import soundfile as sf
 from modules.pyAudioAnalysis import audioBasicIO
@@ -28,12 +26,12 @@ class Audio:
 
     def stream(self, frame_length, hop_length, block_length=1):
         stream = lb.stream(self.path,
-        frame_length=frame_length,
-        hop_length=hop_length,
-        mono=self.mono,
-        block_length=block_length,
-        fill_value=0
-        )
+                           frame_length=frame_length,
+                           hop_length=hop_length,
+                           mono=self.mono,
+                           block_length=block_length,
+                           fill_value=0
+                           )
 
         return stream
 
@@ -42,35 +40,3 @@ class Audio:
                  data=filtered_signal,
                  samplerate=self.sr,
                  subtype='PCM_16')
-
-    def denoise(self,
-                signal: np.ndarray,
-                save: bool = False,
-                out_path: str = 'modules/tmp',
-                prop_decrease: float = 1.0,
-                time_constant_s: float = 2.0,
-                freq_mask_smooth_hz: int = 500,
-                time_mask_smooth_ms: int = 50,
-                thresh_n_mult_nonstationary: int = 1,
-                sigmoid_slope_nonstationary: int = 10,
-                chunk_size: int = 6000,
-                n_ftt: int = 512):
-
-        filtered = nr.reduce_noise(y=signal, sr=self.sr,
-                                   prop_decrease=prop_decrease,
-                                   time_constant_s=time_constant_s,
-                                   freq_mask_smooth_hz=freq_mask_smooth_hz,
-                                   time_mask_smooth_ms=time_mask_smooth_ms,
-                                   thresh_n_mult_nonstationary=thresh_n_mult_nonstationary,
-                                   sigmoid_slope_nonstationary=sigmoid_slope_nonstationary,
-                                   chunk_size=chunk_size,
-                                   n_fft=n_ftt,
-                                   use_tqdm=False)
-
-        out_file = os.path.basename(self.path)
-        out_path = os.path.join(out_path, out_file)
-
-        if save:
-            Audio.__save_file(self, out_path=out_path, filtered_signal=filtered)
-
-        return filtered
