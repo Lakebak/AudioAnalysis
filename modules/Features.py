@@ -9,41 +9,75 @@ from modules import Audio
 from pyannote.audio.pipelines import VoiceActivityDetection, OverlappedSpeechDetection
 
 MID_LEVEL_NAMES = [
-    'zcr_mean', 'energy_mean', 'energy_entropy_mean',
-    'spectral_centroid_mean', 'spectral_spread_mean',
-    'spectral_entropy_mean', 'spectral_flux_mean', 'spectral_rolloff_mean',
-    'mfcc_1_mean', 'mfcc_2_mean', 'mfcc_3_mean', 'mfcc_4_mean',
-    'mfcc_5_mean', 'mfcc_6_mean', 'mfcc_7_mean', 'mfcc_8_mean',
-    'mfcc_9_mean', 'mfcc_10_mean', 'mfcc_11_mean', 'mfcc_12_mean',
-    'mfcc_13_mean',
-    'zcr_std', 'energy_std', 'energy_entropy_std',
-    'spectral_centroid_std', 'spectral_spread_std',
-    'spectral_entropy_std', 'spectral_flux_std', 'spectral_rolloff_std',
-    'mfcc_1_std', 'mfcc_2_std', 'mfcc_3_std', 'mfcc_4_std',
-    'mfcc_5_std', 'mfcc_6_std', 'mfcc_7_std', 'mfcc_8_std',
-    'mfcc_9_std', 'mfcc_10_std', 'mfcc_11_std', 'mfcc_12_std',
-    'mfcc_13_std',
-    'zcr_kurtosis', 'energy_kurtosis', 'energy_entropy_kurtosis',
-    'spectral_centroid_kurtosis', 'spectral_spread_kurtosis',
-    'spectral_entropy_kurtosis', 'spectral_flux_kurtosis', 'spectral_rolloff_kurtosis',
-    'mfcc_1_kurtosis', 'mfcc_2_kurtosis', 'mfcc_3_kurtosis', 'mfcc_4_kurtosis',
-    'mfcc_5_kurtosis', 'mfcc_6_kurtosis', 'mfcc_7_kurtosis', 'mfcc_8_kurtosis',
-    'mfcc_9_kurtosis', 'mfcc_10_kurtosis', 'mfcc_11_kurtosis', 'mfcc_12_kurtosis',
-    'mfcc_13_kurtosis',
-    'zcr_skewness', 'energy_skewness', 'energy_entropy_skewness',
-    'spectral_centroid_skewness', 'spectral_spread_skewness',
-    'spectral_entropy_skewness', 'spectral_flux_skewness', 'spectral_rolloff_skewness',
-    'mfcc_1_skewness', 'mfcc_2_skewness', 'mfcc_3_skewness', 'mfcc_4_skewness',
-    'mfcc_5_skewness', 'mfcc_6_skewness', 'mfcc_7_skewness', 'mfcc_8_skewness',
-    'mfcc_9_skewness', 'mfcc_10_skewness', 'mfcc_11_skewness', 'mfcc_12_skewness',
-    'mfcc_13_skewness'
+    'pcm_RMSenergy_sma_stddev', 'pcm_RMSenergy_sma_skewness', 'pcm_RMSenergy_sma_kurtosis', 'pcm_RMSenergy_sma_meanSegLen'
+    'pcm_zcr_sma_stddev', 'pcm_zcr_sma_skewness', 'pcm_zcr_sma_kurtosis', 'pcm_zcr_sma_meanSegLen',
+    'pcm_RMSenergy_sma_de_stddev', 'pcm_RMSenergy_sma_de_skewness', 'pcm_RMSenergy_sma_de_kurtosis', 'pcm_RMSenergy_sma_de_meanSegLen',
+    'pcm_zcr_sma_de_stddev', 'pcm_zcr_sma_de_skewness', 'pcm_zcr_sma_de_kurtosis', 'pcm_zcr_sma_de_meanSegLen',
+    'pcm_fftMag_spectralRollOff25.0_sma_stddev', 'pcm_fftMag_spectralRollOff25.0_sma_skewness', 'pcm_fftMag_spectralRollOff25.0_sma_kurtosis', 'pcm_fftMag_spectralRollOff25.0_sma_meanSegLen',
+    'pcm_fftMag_spectralRollOff50.0_sma_stddev', 'pcm_fftMag_spectralRollOff50.0_sma_skewness', 'pcm_fftMag_spectralRollOff50.0_sma_kurtosis', 'pcm_fftMag_spectralRollOff50.0_sma_meanSegLen',
+    'pcm_fftMag_spectralRollOff75.0_sma_stddev', 'pcm_fftMag_spectralRollOff75.0_sma_skewness', 'pcm_fftMag_spectralRollOff75.0_sma_kurtosis', 'pcm_fftMag_spectralRollOff75.0_sma_meanSegLen',
+    'pcm_fftMag_spectralRollOff90.0_sma_stddev', 'pcm_fftMag_spectralRollOff90.0_sma_skewness', 'pcm_fftMag_spectralRollOff90.0_sma_kurtosis', 'pcm_fftMag_spectralRollOff90.0_sma_meanSegLen',
+    'pcm_fftMag_spectralFlux_sma_stddev', 'pcm_fftMag_spectralFlux_sma_skewness', 'pcm_fftMag_spectralFlux_sma_kurtosis', 'pcm_fftMag_spectralFlux_sma_meanSegLen',
+    'pcm_fftMag_spectralCentroid_sma_stddev', 'pcm_fftMag_spectralCentroid_sma_skewness', 'pcm_fftMag_spectralCentroid_sma_kurtosis', 'pcm_fftMag_spectralCentroid_sma_meanSegLen',
+    'pcm_fftMag_spectralEntropy_sma_stddev',  'pcm_fftMag_spectralEntropy_sma_skewness',  'pcm_fftMag_spectralEntropy_sma_kurtosis',  'pcm_fftMag_spectralEntropy_sma_meanSegLen',
+    'pcm_fftMag_spectralVariance_sma_stddev', 'pcm_fftMag_spectralVariance_sma_skewness', 'pcm_fftMag_spectralVariance_sma_kurtosis', 'pcm_fftMag_spectralVariance_sma_meanSegLen',
+    'pcm_fftMag_spectralSkewness_sma_stddev', 'pcm_fftMag_spectralSkewness_sma_skewness', 'pcm_fftMag_spectralSkewness_sma_kurtosis', 'pcm_fftMag_spectralSkewness_sma_meanSegLen',
+    'pcm_fftMag_spectralKurtosis_sma_stddev', 'pcm_fftMag_spectralKurtosis_sma_skewness', 'pcm_fftMag_spectralKurtosis_sma_kurtosis', 'pcm_fftMag_spectralKurtosis_sma_meanSegLen',
+    'pcm_fftMag_spectralSlope_sma_stddev', 'pcm_fftMag_spectralSlope_sma_skewness', 'pcm_fftMag_spectralSlope_sma_kurtosis', 'pcm_fftMag_spectralSlope_sma_meanSegLen',
+    'pcm_fftMag_psySharpness_sma_stddev',  'pcm_fftMag_psySharpness_sma_skewness',  'pcm_fftMag_psySharpness_sma_kurtosis', 'pcm_fftMag_psySharpness_sma_meanSegLen',
+    'pcm_fftMag_spectralHarmonicity_sma_stddev', 'pcm_fftMag_spectralHarmonicity_sma_skewness', 'pcm_fftMag_spectralHarmonicity_sma_kurtosis', 'pcm_fftMag_spectralHarmonicity_sma_meanSegLen',
+    'mfcc_sma[1]_stddev', 'mfcc_sma[1]_skewness', 'mfcc_sma[1]_kurtosis', 'mfcc_sma[1]_meanSegLen',
+    'mfcc_sma[2]_stddev', 'mfcc_sma[2]_skewness', 'mfcc_sma[2]_kurtosis', 'mfcc_sma[2]_meanSegLen',
+    'mfcc_sma[3]_stddev', 'mfcc_sma[3]_skewness', 'mfcc_sma[3]_kurtosis', 'mfcc_sma[3]_meanSegLen',
+    'mfcc_sma[4]_stddev', 'mfcc_sma[4]_skewness', 'mfcc_sma[4]_kurtosis', 'mfcc_sma[4]_meanSegLen',
+    'mfcc_sma[5]_stddev', 'mfcc_sma[5]_skewness', 'mfcc_sma[5]_kurtosis', 'mfcc_sma[5]_meanSegLen',
+    'mfcc_sma[6]_stddev', 'mfcc_sma[6]_skewness', 'mfcc_sma[6]_kurtosis', 'mfcc_sma[6]_meanSegLen',
+    'mfcc_sma[7]_stddev', 'mfcc_sma[7]_skewness', 'mfcc_sma[7]_kurtosis', 'mfcc_sma[7]_meanSegLen',
+    'mfcc_sma[8]_stddev', 'mfcc_sma[8]_skewness', 'mfcc_sma[8]_kurtosis', 'mfcc_sma[8]_meanSegLen',
+    'mfcc_sma[9]_stddev', 'mfcc_sma[9]_skewness', 'mfcc_sma[9]_kurtosis', 'mfcc_sma[9]_meanSegLen',
+    'mfcc_sma[10]_stddev', 'mfcc_sma[10]_skewness', 'mfcc_sma[10]_kurtosis', 'mfcc_sma[10]_meanSegLen',
+    'mfcc_sma[11]_stddev', 'mfcc_sma[11]_skewness', 'mfcc_sma[11]_kurtosis', 'mfcc_sma[11]_meanSegLen',
+    'mfcc_sma[12]_stddev', 'mfcc_sma[12]_skewness', 'mfcc_sma[12]_kurtosis', 'mfcc_sma[12]_meanSegLen',
+    'mfcc_sma[13]_stddev', 'mfcc_sma[13]_skewness', 'mfcc_sma[13]_kurtosis', 'mfcc_sma[13]_meanSegLen',
+    'mfcc_sma[14]_stddev', 'mfcc_sma[14]_skewness', 'mfcc_sma[14]_kurtosis', 'mfcc_sma[14]_meanSegLen',
+    'jitterLocal_sma_amean', 'jitterLocal_sma_stddev', 'jitterLocal_sma_skewness', 'jitterLocal_sma_kurtosis',
+    'jitterDDP_sma_amean', 'jitterDDP_sma_stddev', 'jitterDDP_sma_skewness', 'jitterDDP_sma_kurtosis',
+    'shimmerLocal_sma_amean', 'shimmerLocal_sma_stddev', 'shimmerLocal_sma_skewness', 'shimmerLocal_sma_kurtosis',
+    'pcm_RMSenergy_sma_amean',
+    'pcm_zcr_sma_amean',
+    'pcm_fftMag_spectralRollOff25.0_sma_amean',
+    'pcm_fftMag_spectralRollOff50.0_sma_amean',
+    'pcm_fftMag_spectralRollOff75.0_sma_amean',
+    'pcm_fftMag_spectralRollOff90.0_sma_amean',
+    'pcm_fftMag_spectralFlux_sma_amean',
+    'pcm_fftMag_spectralCentroid_sma_amean',
+    'pcm_fftMag_spectralEntropy_sma_amean',
+    'pcm_fftMag_spectralVariance_sma_amean',
+    'pcm_fftMag_spectralSkewness_sma_amean',
+    'pcm_fftMag_spectralKurtosis_sma_amean',
+    'pcm_fftMag_spectralSlope_sma_amean',
+    'pcm_fftMag_psySharpness_sma_amean',
+    'pcm_fftMag_spectralHarmonicity_sma_amean',
+    'mfcc_sma[1]_amean',
+    'mfcc_sma[2]_amean',
+    'mfcc_sma[3]_amean',
+    'mfcc_sma[4]_amean',
+    'mfcc_sma[5]_amean',
+    'mfcc_sma[6]_amean',
+    'mfcc_sma[7]_amean',
+    'mfcc_sma[8]_amean',
+    'mfcc_sma[9]_amean',
+    'mfcc_sma[10]_amean',
+    'mfcc_sma[11]_amean',
+    'mfcc_sma[12]_amean',
+    'mfcc_sma[13]_amean',
+    'mfcc_sma[14]_amean'
 ]
 
 
 class AudioFeature:
 
-    def __init__(self, sr) -> None:
-        self.sr = sr
+    def __init__(self) -> None:
         self.turn_taking = self.TurnTaking()
         self.prosody = self.Prosody()
 
@@ -190,7 +224,7 @@ class AudioFeature:
                                 sr=sr)
             audio_feat = pd.DataFrame()
             for i in range(0, len(audio), hop_factor):
-                signal = audio[i:i+frame_length]
+                signal = audio[i:i + frame_length]
                 if len(signal) < len(frame_length):
                     signal = np.pad(signal, (0, frame_length - len(signal)))
                 df = self.smile.process_signal(
@@ -199,6 +233,3 @@ class AudioFeature:
                 )
                 audio_feat = pd.concat([audio_feat, df])
             return audio_feat
-
-
-
