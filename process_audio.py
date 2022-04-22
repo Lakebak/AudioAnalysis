@@ -1,16 +1,15 @@
 import os
 import glob
 import pandas as pd
-# import argparse
 from tqdm.auto import tqdm
-from modules import AudioFeature
+from modules import AudioFeature, Prosody, TurnTaking
 
 
 def extract(path, sr, frame_length, hop_factor):
     feat_df = pd.DataFrame()
     extractor = AudioFeature()
-    prosody = extractor.Prosody()
-    turn_taking = extractor.TurnTaking()
+    prosody = Prosody()
+    turn_taking = TurnTaking()
 
     for file in tqdm(glob.glob(os.path.join(path, '**', '*.wav'), recursive=True)):
         prosody_df = prosody(path=file,
@@ -42,5 +41,5 @@ if __name__ == '__main__':
                        sr=44100,
                        frame_length=220500,
                        hop_factor=176400)
-    features.to_parquet('/mnt/e/PhD/Data/features/features_5s_44kHz.parquet', engine='fastparquet')
+    features.to_parquet('/mnt/e/PhD/Data/features/features_5s_48kHz.parquet', engine='fastparquet')
 

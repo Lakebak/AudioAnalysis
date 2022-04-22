@@ -91,14 +91,11 @@ MID_LEVEL_NAMES = [
 class AudioFeature:
 
     def __init__(self) -> None:
-
-        self.turn_taking = self.TurnTaking()
-        self.prosody = self.Prosody()
+        pass
 
     def __call__(self,
                  turn_taking_df,
                  prosody_df):
-
         turn_taking = turn_taking_df.drop(
             columns=['Person_vad', 'Person_ovd', 'File_ovd', 'Start_vad',
                      'Start_ovd', 'End_vad', 'End_ovd', 'Middle_vad',
@@ -118,167 +115,172 @@ class AudioFeature:
 
         # return dataset.reindex(sorted(dataset.columns), axis=1)
 
-    class TurnTaking:
 
-        def __init__(self,
-                     vad_onset=0.648,
-                     vad_offset=0.577,
-                     vad_min_dur_on=0.181,
-                     vad_min_dur_off=0.037,
-                     ovd_onset=0.448,
-                     ovd_offset=0.362,
-                     ovd_min_dur_on=0.116,
-                     ovd_min_dur_off=0.187):
-            self.vad_onset = vad_onset
-            self.vad_offset = vad_offset
-            self.vad_min_dur_on = vad_min_dur_on
-            self.vad_min_dur_off = vad_min_dur_off
-            self.ovd_onset = ovd_onset
-            self.ovd_offset = ovd_offset
-            self.ovd_min_dur_on = ovd_min_dur_on
-            self.ovd_min_dur_off = ovd_min_dur_off
+class TurnTaking:
 
-        @staticmethod
-        def __make_df(path: str,
-                      iterable_track: iter) -> pd.DataFrame:
-            """
-            Loop through the iterable return from pyAnnote functions and
-            build a dataframe.\n
-            Dataframe is filled with Nan if iterable is empty
-            :param path: Absolute path of the audio file processed
-            :param iterable_track: Iterable return by pyAnnote functions
-            :return: Pandas Dataframe 
-            """
-            file_name = os.path.splitext(os.path.basename(path))[0]
+    def __init__(self,
+                 vad_onset=0.648,
+                 vad_offset=0.577,
+                 vad_min_dur_on=0.181,
+                 vad_min_dur_off=0.037,
+                 ovd_onset=0.448,
+                 ovd_offset=0.362,
+                 ovd_min_dur_on=0.116,
+                 ovd_min_dur_off=0.187):
+        self.vad_onset = vad_onset
+        self.vad_offset = vad_offset
+        self.vad_min_dur_on = vad_min_dur_on
+        self.vad_min_dur_off = vad_min_dur_off
+        self.ovd_onset = ovd_onset
+        self.ovd_offset = ovd_offset
+        self.ovd_min_dur_on = ovd_min_dur_on
+        self.ovd_min_dur_off = ovd_min_dur_off
 
-            data = {}
+    def __make_df(self,
+                  path: str,
+                  iterable_track: iter) -> pd.DataFrame:
+        """
+        Loop through the iterable return from pyAnnote functions and
+        build a dataframe.\n
+        Dataframe is filled with Nan if iterable is empty
+        :param path: Absolute path of the audio file processed
+        :param iterable_track: Iterable return by pyAnnote functions
+        :return: Pandas Dataframe
+        """
+        file_name = os.path.splitext(os.path.basename(path))[0]
 
-            # Loop the iterable and store data in a dictionary
-            for tracks, person, _ in iterable_track.itertracks(yield_label=True):
-                data['File'] = file_name
-                data['Person'] = person
-                data['Start'] = tracks.start
-                data['End'] = tracks.end
-                data['Duration'] = tracks.duration
-                data['Middle'] = tracks.middle
+        data = {}
 
-            df = pd.DataFrame([data])  # Make DataFrame from dict
+        # Loop the iterable and store data in a dictionary
+        for tracks, person, _ in iterable_track.itertracks(yield_label=True):
+            data['File'] = file_name
+            data['Person'] = person
+            data['Start'] = tracks.start
+            data['End'] = tracks.end
+            data['Duration'] = tracks.duration
+            data['Middle'] = tracks.middle
 
-            if df.empty:  # If iterable is empty fill dict with Nan
-                data = {'Person': np.nan,
-                        'Start': np.nan,
-                        'End': np.nan,
-                        'Duration': np.nan,
-                        'Middle': np.nan
-                        }
-                df = pd.DataFrame([data])
+        df = pd.DataFrame([data])  # Make DataFrame from dict
 
-            df['File'] = file_name
+        if df.empty:  # If iterable is empty fill dict with Nan
+            data = {'Person': np.nan,
+                    'Start': np.nan,
+                    'End': np.nan,
+                    'Duration': np.nan,
+                    'Middle': np.nan
+                    }
+            df = pd.DataFrame([data])
 
-            return df
+        df['File'] = file_name
 
-        def __call__(self,
-                     path: str,
-                     sr: int = 44100,
-                     frame_length: int = 220500,
-                     hop_length: int = 176400) -> pd.DataFrame:
-            """
-            When calling the class it starts the processing of the audio 
-            and compute the amount of Voice Activity and Overlapped Speech.\n
-            Default values are for processing audio at 44,1kHz on 
-            frames of 5s with 1s of overlap\n
-            :param path: Absolute path of the audio file processed
-            :param sr: Sampling frequency at which load and process the file 
-            :param frame_length: Length of the frame in frames 
-            :param hop_length: Starting position of the next frame,
-            from the previous start  
-            :return: Pandas DataFrame with files names as index and start,
-            end, middle point and duration of Voice Activity and Overlapped Speech
-            """
+        return df
 
-            def voice_activity(self, audio_in_memory):
-                pipeline = VoiceActivityDetection(segmentation='pyannote/segmentation')
-                hyper_parameters = {
-                    "onset": self.vad_onset,
-                    "offset": self.vad_offset,
-                    "min_duration_on": self.vad_min_dur_on,
-                    "min_duration_off": self.vad_min_dur_off
-                }
+    def __voice_activity(self, audio_in_memory):
+        pipeline = VoiceActivityDetection(segmentation='pyannote/segmentation')
+        hyper_parameters = {
+            "onset": self.vad_onset,
+            "offset": self.vad_offset,
+            "min_duration_on": self.vad_min_dur_on,
+            "min_duration_off": self.vad_min_dur_off
+        }
 
-                pipeline.instantiate(hyper_parameters)
+        pipeline.instantiate(hyper_parameters)
 
-                return pipeline(audio_in_memory)
+        return pipeline(audio_in_memory)
 
-            def overlapped_speech(self, audio_in_memory):
-                pipeline = OverlappedSpeechDetection(segmentation='pyannote/segmentation')
-                hyper_parameters = {
-                    "onset": self.ovd_onset,
-                    "offset": self.ovd_offset,
-                    "min_duration_on": self.ovd_min_dur_on,
-                    "min_duration_off": self.ovd_min_dur_off
-                }
+    def __overlapped_speech(self, audio_in_memory):
+        pipeline = OverlappedSpeechDetection(segmentation='pyannote/segmentation')
+        hyper_parameters = {
+            "onset": self.ovd_onset,
+            "offset": self.ovd_offset,
+            "min_duration_on": self.ovd_min_dur_on,
+            "min_duration_off": self.ovd_min_dur_off
+        }
 
-                pipeline.instantiate(hyper_parameters)
+        pipeline.instantiate(hyper_parameters)
 
-                return pipeline(audio_in_memory)
+        return pipeline(audio_in_memory)
 
-            def postprocess_turn_taking(df_vad, df_ovd):
-                df_vad['Silence'] = (frame_length / sr) - df_vad['Duration']
-                df_vad['Speech ratio'] = df_vad['Duration'] / df_vad['Silence']
+    def __postprocess_turn_taking(self, df_vad, df_ovd, frame_length, sr):
+        df_vad['Silence'] = (frame_length / sr) - df_vad['Duration']
+        df_vad['Speech ratio'] = df_vad['Duration'] / df_vad['Silence']
 
-                dataset = df_vad.join(df_ovd,
-                                      lsuffix='_vad',
-                                      rsuffix='_ovd')
-                return dataset
+        dataset = df_vad.join(df_ovd,
+                              lsuffix='_vad',
+                              rsuffix='_ovd')
+        return dataset
 
-            df_vad = pd.DataFrame()
-            df_ovd = pd.DataFrame()
+    def __call__(self,
+                 path: str,
+                 sr: int = 44100,
+                 frame_length: int = 220500,
+                 hop_length: int = 176400) -> pd.DataFrame:
+        """
+        When calling the class it starts the processing of the audio
+        and compute the amount of Voice Activity and Overlapped Speech.\n
+        Default values are for processing audio at 44,1kHz on
+        frames of 5s with 1s of overlap\n
+        :param path: Absolute path of the audio file processed
+        :param sr: Sampling frequency at which load and process the file
+        :param frame_length: Length of the frame in frames
+        :param hop_length: Starting position of the next frame,
+        from the previous start
+        :return: Pandas DataFrame with files names as index and start,
+        end, middle point and duration of Voice Activity and Overlapped Speech
+        """
 
-            audio, sr = lb.load(path,
-                                sr)
-            for i in range(0, len(audio), hop_length):
-                waveform = reshape(Tensor(audio[i:i + frame_length]), (1, -1))
-                audio_in_memory = {"waveform": waveform, "sample_rate": sr}
-                vad = voice_activity(self, audio_in_memory=audio_in_memory)
-                ovd = overlapped_speech(self, audio_in_memory=audio_in_memory)
+        df_vad = pd.DataFrame()
+        df_ovd = pd.DataFrame()
 
-                df_vad = pd.concat([df_vad, AudioFeature.TurnTaking.__make_df(path, vad)])
-                df_ovd = pd.concat([df_ovd, AudioFeature.TurnTaking.__make_df(path, ovd)])
+        audio, sr = lb.load(path,
+                            sr)
+        for i in range(0, len(audio), hop_length):
+            waveform = reshape(Tensor(audio[i:i + frame_length]), (1, -1))
+            audio_in_memory = {"waveform": waveform, "sample_rate": sr}
+            vad = self.__voice_activity(audio_in_memory=audio_in_memory)
+            ovd = self.__overlapped_speech(audio_in_memory=audio_in_memory)
 
-            stop = df_vad.shape[0]
-            df_vad.set_index(pd.RangeIndex(start=0, stop=stop), inplace=True)
-            df_ovd.set_index(pd.RangeIndex(start=0, stop=stop), inplace=True)
+            df_vad = pd.concat([df_vad, self.__make_df(path, vad)])
+            df_ovd = pd.concat([df_ovd, self.__make_df(path, ovd)])
 
-            out_df = postprocess_turn_taking(
-                df_vad=df_vad,
-                df_ovd=df_ovd)
+        stop = df_vad.shape[0]
+        df_vad.set_index(pd.RangeIndex(start=0, stop=stop), inplace=True)
+        df_ovd.set_index(pd.RangeIndex(start=0, stop=stop), inplace=True)
 
-            return out_df
+        out_df = self.__postprocess_turn_taking(
+            df_vad=df_vad,
+            df_ovd=df_ovd,
+            frame_length=frame_length,
+            sr=sr)
 
-    class Prosody:  # TO-DO: implementare possibilità di scegliere le feature da un file di configurazione
-        def __init__(self):
-            self.smile = opensmile.Smile(
-                feature_set=opensmile.FeatureSet.ComParE_2016,
-                feature_level=opensmile.FeatureLevel.Functionals
+        return out_df
+
+
+class Prosody:  # TO-DO: implementare possibilità di scegliere le feature da un file di configurazione
+    def __init__(self):
+        self.smile = opensmile.Smile(
+            feature_set=opensmile.FeatureSet.ComParE_2016,
+            feature_level=opensmile.FeatureLevel.Functionals,
+
+        )
+
+    def __call__(self,
+                 path,
+                 sr,
+                 frame_length,
+                 hop_factor):
+        file_name = os.path.splitext(os.path.basename(path))[0]
+        audio, sr = lb.load(path,
+                            sr=sr)
+        audio_feat = pd.DataFrame()
+        for i in range(0, len(audio), hop_factor):
+            signal = audio[i:i + frame_length]
+            if len(signal) < frame_length:
+                signal = np.pad(signal, (0, frame_length - len(signal)))
+            df = self.smile.process_signal(
+                signal=signal,
+                sampling_rate=sr
             )
-
-        def __call__(self,
-                     path,
-                     sr,
-                     frame_length,
-                     hop_factor):
-            file_name = os.path.splitext(os.path.basename(path))[0]
-            audio, sr = lb.load(path,
-                                sr=sr)
-            audio_feat = pd.DataFrame()
-            for i in range(0, len(audio), hop_factor):
-                signal = audio[i:i + frame_length]
-                if len(signal) < frame_length:
-                    signal = np.pad(signal, (0, frame_length - len(signal)))
-                df = self.smile.process_signal(
-                    signal=signal,
-                    sampling_rate=sr
-                )
-                df['File'] = file_name
-                audio_feat = pd.concat([audio_feat, df])
-            return audio_feat
+            df['File'] = file_name
+            audio_feat = pd.concat([audio_feat, df])
+        return audio_feat
