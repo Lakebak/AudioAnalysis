@@ -261,7 +261,8 @@ class Prosody:  # TO-DO: implementare possibilità di scegliere le feature da un
         self.smile = opensmile.Smile(
             feature_set=opensmile.FeatureSet.ComParE_2016,
             feature_level=opensmile.FeatureLevel.Functionals,
-
+            multiprocessing=True,
+            num_workers=None
         )
 
     def __call__(self,
